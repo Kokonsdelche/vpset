@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# راهنمای معاملات در Derive
 
-## Getting Started
+این وب‌سایت یک راهنمای جامع برای معاملات در پلتفرم Derive است. با استفاده از این وب‌سایت، کاربران می‌توانند نحوه استفاده از این پلتفرم معاملاتی را یاد بگیرند.
 
-First, run the development server:
+## ویژگی‌ها
 
+- راهنمای کامل معاملات
+- قیمت‌های زنده ارزهای دیجیتال
+- پشتیبانی 24/7 از طریق واتس‌اپ و تلگرام
+- آموزش‌های گام به گام
+- مقالات تخصصی
+
+## تکنولوژی‌ها
+
+- Next.js
+- React
+- Tailwind CSS
+- TypeScript
+
+## نصب و راه‌اندازی
+
+1. کلون کردن مخزن:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/your-username/your-repo-name.git
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. نصب وابستگی‌ها:
+```bash
+npm install
+# یا
+yarn install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. اجرای پروژه در محیط توسعه:
+```bash
+npm run dev
+# یا
+yarn dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. ساخت نسخه تولید:
+```bash
+npm run build
+# یا
+yarn build
+```
 
-## Learn More
+## ارتباط با ما
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- تلگرام: [@korosh_onsori](https://t.me/korosh_onsori)
+- واتس‌اپ: [+5511939441883](https://wa.me/5511939441883)

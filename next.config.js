@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
-  basePath: '',
+  basePath: '/vpset',
+  assetPrefix: '/vpset/',
   images: {
     unoptimized: true,
   },

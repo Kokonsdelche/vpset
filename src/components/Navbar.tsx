@@ -4,7 +4,7 @@ import { useState } from "react";
 export default function Navbar() {
         const [menuOpen, setMenuOpen] = useState(false);
         return (
-                <header className="fixed top-[40px] w-full bg-black/80 backdrop-blur-sm z-50 border-b border-gray-800">
+                <header className="fixed w-full bg-black/80 backdrop-blur-sm z-50 border-b border-gray-800 top-[80px] md:top-[80px] lg:top-[80px]">
                         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
                                 <div className="flex items-center gap-8">
                                         <a href="/" className="text-xl font-bold"> SETDERIVE</a>
@@ -46,7 +46,7 @@ export default function Navbar() {
                         </nav>
                         {/* Mobile menu */}
                         {menuOpen && (
-                                <div className="md:hidden bg-black/95 border-b border-gray-800 px-4 py-6 absolute top-full right-0 left-0 z-50 animate-fade-in-down">
+                                <div className="md:hidden bg-black/95 border-b border-gray-800 px-4 py-6 absolute right-0 left-0 z-50 animate-fade-in-down top-[80px]">
                                         <a href="/" className="block py-2 px-2 hover:text-blue-400" onClick={() => setMenuOpen(false)}>خانه</a>
                                         <a href="/learn" className="block py-2 px-2 hover:text-blue-400" onClick={() => setMenuOpen(false)}>آموزش</a>
                                         <a href="/articles" className="block py-2 px-2 hover:text-blue-400" onClick={() => setMenuOpen(false)}>مقالات</a>

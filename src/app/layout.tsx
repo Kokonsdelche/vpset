@@ -3,6 +3,7 @@ import { Vazirmatn } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/Navbar";
 import Ticker from "../components/Ticker";
+import Footer from "../components/Footer";
 
 const vazir = Vazirmatn({ subsets: ["arabic"] });
 
@@ -26,44 +27,13 @@ export default function RootLayout({
           بعد از تهیه vps یا vpn خود و اتصال حتما برای بار اول از دکمه شروع معاملات استفاده کنید تا وارد پروتکل امن شوید فقط برای بار اول الزامی است
         </div>
         <Navbar />
-        <div className="mt-[150px] mb-0">
+        <div className="mt-[170px] md:mt-[150px] mb-0">
           <Ticker />
         </div>
         <main className="pt-0">
           {children}
         </main>
-        <footer className="bg-black border-t border-gray-800 mt-20">
-          <div className="container mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
-                <h3 className="text-lg font-bold mb-4"> SETDERIVE </h3>
-                <p className="text-gray-400">دروازه شما به دنیای معاملات غیرمتمرکز</p>
-              </div>
-              <div>
-                <h4 className="font-bold mb-4">دسترسی سریع</h4>
-                <ul className="space-y-2">
-                  <li><a href="/" className="text-gray-400 hover:text-white">خانه</a></li>
-                  <li><a href="/learn" className="text-gray-400 hover:text-white">آموزش</a></li>
-                  <li><a href="/articles" className="text-gray-400 hover:text-white">مقالات</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-bold mb-4">منابع</h4>
-                <ul className="space-y-2">
-                  <li><a href="https://www.derive.xyz/invite/NX4NF" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">شروع معاملات</a></li>
-                  <li><a href="https://blog.derive.xyz" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">وبلاگ Derive</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-bold mb-4">ارتباط با ما</h4>
-                <ul className="space-y-2">
-                  <li><a href="https://twitter.com/derivexyz" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">توییتر</a></li>
-                  <li><a href="https://discord.gg/derive" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">دیسکورد</a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </footer>
+        <Footer />
         {/* WhatsApp Floating Button */}
         <a
           href="https://wa.me/5511939441883"

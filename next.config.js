@@ -1,10 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  basePath: '/vpset',
-  assetPrefix: '/vpset/',
+  // output: 'export',
+  // basePath: '/vpset',
+  // assetPrefix: '/vpset/',
   images: {
     unoptimized: true,
+    domains: ['localhost'],
   },
   trailingSlash: true,
 };

@@ -15,6 +15,7 @@ export default function Navbar() {
                                                 <a href="/about" className="hover:text-blue-400">درباره ما</a>
                                                 <a href="/contact" className="hover:text-blue-400">ارتباط با ما</a>
                                                 <a href="/buy" className="hover:text-blue-400">نحوه خرید vpn,vps</a>
+                                                <a href="/black-scholes" className="hover:text-blue-400">ماشین حساب بلک شولز</a>
                                         </div>
                                         {/* Hamburger menu button */}
                                         <button
@@ -63,6 +64,7 @@ export default function Navbar() {
                                         <a href="/about" className="block py-2 px-2 hover:text-blue-400" onClick={() => setMenuOpen(false)}>درباره ما</a>
                                         <a href="/contact" className="block py-2 px-2 hover:text-blue-400" onClick={() => setMenuOpen(false)}>ارتباط با ما</a>
                                         <a href="/buy" className="block py-2 px-2 hover:text-blue-400" onClick={() => setMenuOpen(false)}>نحوه خرید vpn,vps</a>
+                                        <a href="/black-scholes" className="block py-2 px-2 hover:text-blue-400" onClick={() => setMenuOpen(false)}>ماشین حساب بلک شولز</a>
                                 </div>
                         )}
                 </header>

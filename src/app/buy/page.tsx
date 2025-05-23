@@ -16,7 +16,7 @@ export default function Buy() {
                                                 className="text-blue-400 hover:text-blue-500 transition-colors"
                                                 viewBox="0 0 32 32"
                                         >
-                                                <path d="M21.05 3.05a2.5 2.5 0 0 0-2.6-.2L3.6 9.2c-1.1.5-1.1 1.9 0 2.4l3.6 1.5 1.5 3.6c.5 1.1 1.9 1.1 2.4 0l6.35-14.85c.2-.5.8-.7 1.2-.5.5.2.7.8.5 1.2L8.7 20.4c-.2.5-.8.7-1.2.5-.5-.2-.7-.8-.5-1.2l6.35-14.85c.2-.5.8-.7 1.2-.5.5.2.7.8.5 1.2z" />
+                                                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
                                         </svg>
                                 </a>
                                 <a href="https://wa.me/5511939441883" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">

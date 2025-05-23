@@ -42,9 +42,7 @@ export default function RootLayout({
           className="fixed z-50 flex items-center gap-2 bottom-6 left-6 md:left-10 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full shadow-lg transition-colors text-lg md:text-xl"
           style={{ direction: 'ltr' }}
         >
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="currentColor" className="inline-block">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-          </svg>
+          <span className="font-bold">واتساپ</span>
           <span className="font-bold">24/7</span>
         </a>
       </body>

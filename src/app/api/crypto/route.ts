@@ -1,64 +1,63 @@
 import { NextResponse } from 'next/server';
 
+const SYMBOLS = [
+        'BTCUSDT',
+        'ETHUSDT',
+        'BNBUSDT',
+        'SOLUSDT',
+        'SUIUSDT',
+        'LINKUSDT',
+        'DOTUSDT',
+        'XRPUSDT',
+        'DOGEUSDT',
+        'SUSHIUSDT',
+        'ADAUSDT',
+        'ARBUSDT'
+];
+
 export async function GET() {
         try {
-                const symbols = [
-                        "BTCUSDT",
-                        "ETHUSDT",
-                        "BNBUSDT",
-                        "SOLUSDT",
-                        "SUIUSDT",
-                        "LINKUSDT",
-                        "DOTUSDT",
-                        "XRPUSDT",
-                        "DOGEUSDT",
-                        "SUSHIUSDT",
-                        "ADAUSDT",
-                        "ARBUSDT"
-                ];
+                const prices = await getBinancePrices();
+                return NextResponse.json(prices, {
+                        headers: {
+                                'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=30',
+                        },
+                });
+        } catch (error) {
+                console.error('Error fetching prices:', error);
+                return NextResponse.json(
+                        { error: 'Failed to fetch prices' },
+                        { status: 500 }
+                );
+        }
+}
 
-                // Validate symbols
-                if (!Array.isArray(symbols) || symbols.length === 0) {
-                        return NextResponse.json(
-                                { error: 'Invalid symbols' },
-                                { status: 400 }
-                        );
-                }
+async function getBinancePrices() {
+        const prices: any = {};
 
-                const promises = symbols.map(symbol =>
+        try {
+                const promises = SYMBOLS.map(symbol =>
                         fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`, {
-                                headers: {
-                                        'Accept': 'application/json',
-                                        'Cache-Control': 'no-cache'
-                                },
-                                cache: 'no-store'
+                                next: { revalidate: 30 }
                         })
                                 .then(res => res.json())
                 );
 
                 const results = await Promise.all(promises);
 
-                // Validate and format response
-                const formattedData = results
-                        .filter((item: any) => item && item.symbol && item.lastPrice)
-                        .map((item: any) => ({
-                                symbol: `BINANCE:${item.symbol}`,
-                                price: parseFloat(item.lastPrice) || 0,
-                                change: parseFloat(item.priceChange) || 0,
-                                changePercent: parseFloat(item.priceChangePercent) || 0
-                        }));
-
-                return NextResponse.json(formattedData, {
-                        headers: {
-                                'Cache-Control': 'no-store, max-age=0',
-                                'X-Content-Type-Options': 'nosniff'
+                results.forEach((data: any) => {
+                        if (data.symbol) {
+                                const symbol = data.symbol.replace('USDT', '').toLowerCase();
+                                prices[symbol] = {
+                                        usd: parseFloat(data.lastPrice),
+                                        usd_24h_change: parseFloat(data.priceChangePercent)
+                                };
                         }
                 });
+
+                return prices;
         } catch (error) {
-                console.error('Error in crypto API route:', error);
-                return NextResponse.json(
-                        { error: 'Failed to fetch cryptocurrency data' },
-                        { status: 500 }
-                );
+                console.error('Error fetching from Binance:', error);
+                throw error;
         }
 } 

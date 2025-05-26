@@ -16,10 +16,13 @@ const coins = [
         { symbol: "BINANCE:ARBUSDT", label: "ARB" },
 ];
 
-interface PriceData {
-        price: number;
-        change: number;
-        changePercent: number;
+interface Price {
+        usd: number;
+        usd_24h_change: number;
+}
+
+interface Prices {
+        [key: string]: Price;
 }
 
 const formatPrice = (price: number, symbol: string) => {
@@ -41,41 +44,29 @@ const formatChange = (change: number) => {
 };
 
 export default function Ticker() {
-        const [prices, setPrices] = useState<Record<string, PriceData>>({});
-        const [nextPrices, setNextPrices] = useState<Record<string, PriceData>>({});
+        const [prices, setPrices] = useState<Prices>({});
+        const [nextPrices, setNextPrices] = useState<Prices>({});
         const [error, setError] = useState<string | null>(null);
         const [loading, setLoading] = useState(true);
         const [duration, setDuration] = useState(30);
-        const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+        const [lastUpdate, setLastUpdate] = useState<number>(Date.now());
         const marqueeRef = useRef<HTMLDivElement>(null);
         const [isFirstSet, setIsFirstSet] = useState(true);
 
-        const fetchPrices = async (isFirst: boolean) => {
+        const fetchPrices = async (isFirst: boolean = true) => {
                 try {
                         setLoading(true);
                         setError(null);
                         const res = await fetch('/api/crypto');
                         if (!res.ok) throw new Error("خطا در دریافت داده");
                         const data = await res.json();
-                        const filtered: Record<string, PriceData> = {};
-
-                        data.forEach((item: any) => {
-                                const coin = coins.find(c => c.symbol === item.symbol);
-                                if (coin) {
-                                        filtered[coin.label] = {
-                                                price: item.price,
-                                                change: item.change,
-                                                changePercent: item.changePercent
-                                        };
-                                }
-                        });
 
                         if (isFirst) {
-                                setPrices(filtered);
+                                setPrices(data);
                         } else {
-                                setNextPrices(filtered);
+                                setNextPrices(data);
                         }
-                        setLastUpdate(new Date());
+                        setLastUpdate(Date.now());
                 } catch (err) {
                         setError("دریافت قیمت آنلاین ممکن نیست. لطفاً بعداً تلاش کنید.");
                 } finally {
@@ -84,20 +75,17 @@ export default function Ticker() {
         };
 
         useEffect(() => {
-                if (marqueeRef.current) {
-                        const width = marqueeRef.current.scrollWidth;
-                        const newDuration = Math.max(6, Math.floor(width / 300) * 3);
-                        setDuration(newDuration);
-                }
-        }, [loading, prices, nextPrices]);
-
-        useEffect(() => {
                 const initializePrices = async () => {
                         await fetchPrices(true);
                         await fetchPrices(false);
                 };
                 initializePrices();
-        }, []);
+                const interval = setInterval(() => {
+                        fetchPrices(!isFirstSet);
+                }, 30000);
+
+                return () => clearInterval(interval);
+        }, [isFirstSet]);
 
         const handleAnimationEnd = () => {
                 setIsFirstSet(!isFirstSet);
@@ -113,55 +101,47 @@ export default function Ticker() {
         }
 
         const currentPrices = isFirstSet ? prices : nextPrices;
+        const animationDuration = Object.keys(currentPrices).length * 2; // 2 seconds per price
 
         return (
-                <div className="w-full bg-[#181c20] border-b border-gray-800 shadow-lg overflow-hidden select-none">
+                <div className="w-full overflow-hidden bg-gray-900 py-2">
                         {loading ? (
                                 <div className="text-center text-gray-400 py-2">در حال دریافت قیمت‌ها...</div>
                         ) : (
                                 <div className="relative w-full overflow-hidden">
                                         <div className="text-xs text-gray-400 text-center py-1">
-                                                آخرین به‌روزرسانی: {lastUpdate.toLocaleTimeString('fa-IR')}
+                                                آخرین به‌روزرسانی: {new Date(lastUpdate).toLocaleTimeString('fa-IR')}
                                         </div>
                                         <div
                                                 ref={marqueeRef}
-                                                className="flex whitespace-nowrap group"
+                                                className="flex whitespace-nowrap"
                                                 style={{
-                                                        animation: `marquee-right-to-left ${duration}s linear`,
+                                                        animation: `ticker ${animationDuration}s linear infinite`,
+                                                        willChange: 'transform'
                                                 }}
                                                 onAnimationEnd={handleAnimationEnd}
-                                                onMouseEnter={e => e.currentTarget.style.animationPlayState = "paused"}
-                                                onMouseLeave={e => e.currentTarget.style.animationPlayState = "running"}
                                         >
-                                                {coins.map((coin) => (
+                                                {Object.entries(currentPrices).map(([symbol, data]) => (
                                                         <div
-                                                                key={coin.symbol}
-                                                                className="flex items-center gap-2 px-6 py-2 min-w-max bg-[#23272b] rounded-lg mx-2 shadow border border-gray-700"
+                                                                key={symbol}
+                                                                className="inline-flex items-center px-4 text-white"
                                                         >
-                                                                <span className="font-bold text-white drop-shadow">{coin.label}</span>
-                                                                <span className="text-lime-400 font-mono drop-shadow transition-all duration-500 ease-in-out">
-                                                                        ${currentPrices[coin.label]?.price
-                                                                                ? formatPrice(currentPrices[coin.label].price, coin.label)
-                                                                                : "..."}
-                                                                </span>
-                                                                <span className={`text-sm font-bold transition-all duration-500 ease-in-out ${currentPrices[coin.label]?.changePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                                                        {currentPrices[coin.label]?.changePercent
-                                                                                ? `${currentPrices[coin.label].changePercent >= 0 ? '↑' : '↓'} ${formatChange(Math.abs(currentPrices[coin.label].changePercent))}%`
-                                                                                : "..."}
+                                                                <span className="font-bold">{symbol.toUpperCase()}</span>
+                                                                <span className="mx-2">${data.usd.toLocaleString()}</span>
+                                                                <span className={`${data.usd_24h_change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                                        {data.usd_24h_change >= 0 ? '↑' : '↓'} {Math.abs(data.usd_24h_change).toFixed(2)}%
                                                                 </span>
                                                         </div>
                                                 ))}
                                         </div>
                                         <style jsx>{`
-            @keyframes marquee-right-to-left {
-              0% { transform: translateX(100vw); }
-              100% { transform: translateX(-100%); }
-            }
-            .group {
-              animation-play-state: running;
-            }
-            .group:hover {
-              animation-play-state: paused;
+            @keyframes ticker {
+              0% {
+                transform: translateX(100vw);
+              }
+              100% {
+                transform: translateX(-100%);
+              }
             }
           `}</style>
                                 </div>

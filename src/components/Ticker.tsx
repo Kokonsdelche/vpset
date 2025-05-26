@@ -42,74 +42,67 @@ const formatChange = (change: number) => {
 
 export default function Ticker() {
         const [prices, setPrices] = useState<Record<string, PriceData>>({});
+        const [nextPrices, setNextPrices] = useState<Record<string, PriceData>>({});
         const [error, setError] = useState<string | null>(null);
         const [loading, setLoading] = useState(true);
         const [duration, setDuration] = useState(30);
         const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
         const marqueeRef = useRef<HTMLDivElement>(null);
-        const [transform, setTransform] = useState('translateX(100%)');
+        const [isFirstSet, setIsFirstSet] = useState(true);
 
-        useEffect(() => {
-                async function fetchPrices() {
-                        try {
-                                setLoading(true);
-                                setError(null);
-                                const res = await fetch('/api/crypto');
-                                if (!res.ok) throw new Error("خطا در دریافت داده");
-                                const data = await res.json();
-                                const filtered: Record<string, PriceData> = {};
+        const fetchPrices = async (isFirst: boolean) => {
+                try {
+                        setLoading(true);
+                        setError(null);
+                        const res = await fetch('/api/crypto');
+                        if (!res.ok) throw new Error("خطا در دریافت داده");
+                        const data = await res.json();
+                        const filtered: Record<string, PriceData> = {};
 
-                                data.forEach((item: any) => {
-                                        const coin = coins.find(c => c.symbol === item.symbol);
-                                        if (coin) {
-                                                filtered[coin.label] = {
-                                                        price: item.price,
-                                                        change: item.change,
-                                                        changePercent: item.changePercent
-                                                };
-                                        }
-                                });
+                        data.forEach((item: any) => {
+                                const coin = coins.find(c => c.symbol === item.symbol);
+                                if (coin) {
+                                        filtered[coin.label] = {
+                                                price: item.price,
+                                                change: item.change,
+                                                changePercent: item.changePercent
+                                        };
+                                }
+                        });
 
+                        if (isFirst) {
                                 setPrices(filtered);
-                                setLastUpdate(new Date());
-                                // ریست کردن موقعیت به سمت راست
-                                setTransform('translateX(100%)');
-                                // شروع انیمیشن بعد از یک لحظه
-                                setTimeout(() => {
-                                        setTransform('translateX(-100%)');
-                                }, 50);
-                        } catch (err) {
-                                setError("دریافت قیمت آنلاین ممکن نیست. لطفاً بعداً تلاش کنید.");
-                        } finally {
-                                setLoading(false);
+                        } else {
+                                setNextPrices(filtered);
                         }
+                        setLastUpdate(new Date());
+                } catch (err) {
+                        setError("دریافت قیمت آنلاین ممکن نیست. لطفاً بعداً تلاش کنید.");
+                } finally {
+                        setLoading(false);
                 }
-
-                const startAnimation = () => {
-                        if (marqueeRef.current) {
-                                const width = marqueeRef.current.scrollWidth;
-                                const newDuration = Math.max(6, Math.floor(width / 300) * 3);
-                                setDuration(newDuration);
-
-                                const updateInterval = setInterval(fetchPrices, newDuration * 1000);
-
-                                return () => {
-                                        clearInterval(updateInterval);
-                                };
-                        }
-                };
-
-                fetchPrices();
-                const cleanup = startAnimation();
-                return cleanup;
-        }, []);
+        };
 
         useEffect(() => {
                 if (marqueeRef.current) {
                         const width = marqueeRef.current.scrollWidth;
-                        setDuration(Math.max(6, Math.floor(width / 300) * 3));
+                        const newDuration = Math.max(6, Math.floor(width / 300) * 3);
+                        setDuration(newDuration);
                 }
-        }, [loading, prices]);
+        }, [loading, prices, nextPrices]);
+
+        useEffect(() => {
+                const initializePrices = async () => {
+                        await fetchPrices(true);
+                        await fetchPrices(false);
+                };
+                initializePrices();
+        }, []);
+
+        const handleAnimationEnd = () => {
+                setIsFirstSet(!isFirstSet);
+                fetchPrices(!isFirstSet);
+        };
 
         if (error) {
                 return (
@@ -118,6 +111,8 @@ export default function Ticker() {
                         </div>
                 );
         }
+
+        const currentPrices = isFirstSet ? prices : nextPrices;
 
         return (
                 <div className="w-full bg-[#181c20] border-b border-gray-800 shadow-lg overflow-hidden select-none">
@@ -132,11 +127,11 @@ export default function Ticker() {
                                                 ref={marqueeRef}
                                                 className="flex whitespace-nowrap group"
                                                 style={{
-                                                        transform,
-                                                        transition: `transform ${duration}s linear`,
+                                                        animation: `marquee-right-to-left ${duration}s linear`,
                                                 }}
-                                                onMouseEnter={e => e.currentTarget.style.transition = 'none'}
-                                                onMouseLeave={e => e.currentTarget.style.transition = `transform ${duration}s linear`}
+                                                onAnimationEnd={handleAnimationEnd}
+                                                onMouseEnter={e => e.currentTarget.style.animationPlayState = "paused"}
+                                                onMouseLeave={e => e.currentTarget.style.animationPlayState = "running"}
                                         >
                                                 {coins.map((coin) => (
                                                         <div
@@ -145,33 +140,13 @@ export default function Ticker() {
                                                         >
                                                                 <span className="font-bold text-white drop-shadow">{coin.label}</span>
                                                                 <span className="text-lime-400 font-mono drop-shadow transition-all duration-500 ease-in-out">
-                                                                        ${prices[coin.label]?.price
-                                                                                ? formatPrice(prices[coin.label].price, coin.label)
+                                                                        ${currentPrices[coin.label]?.price
+                                                                                ? formatPrice(currentPrices[coin.label].price, coin.label)
                                                                                 : "..."}
                                                                 </span>
-                                                                <span className={`text-sm font-bold transition-all duration-500 ease-in-out ${prices[coin.label]?.changePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                                                        {prices[coin.label]?.changePercent
-                                                                                ? `${prices[coin.label].changePercent >= 0 ? '↑' : '↓'} ${formatChange(Math.abs(prices[coin.label].changePercent))}%`
-                                                                                : "..."}
-                                                                </span>
-                                                        </div>
-                                                ))}
-                                                {/* تکرار دوم برای حرکت بی‌وقفه */}
-                                                {coins.map((coin) => (
-                                                        <div
-                                                                key={coin.symbol + "-repeat"}
-                                                                className="flex items-center gap-2 px-6 py-2 min-w-max bg-[#23272b] rounded-lg mx-2 shadow border border-gray-700"
-                                                                aria-hidden="true"
-                                                        >
-                                                                <span className="font-bold text-white drop-shadow">{coin.label}</span>
-                                                                <span className="text-lime-400 font-mono drop-shadow transition-all duration-500 ease-in-out">
-                                                                        ${prices[coin.label]?.price
-                                                                                ? formatPrice(prices[coin.label].price, coin.label)
-                                                                                : "..."}
-                                                                </span>
-                                                                <span className={`text-sm font-bold transition-all duration-500 ease-in-out ${prices[coin.label]?.changePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                                                        {prices[coin.label]?.changePercent
-                                                                                ? `${prices[coin.label].changePercent >= 0 ? '↑' : '↓'} ${formatChange(Math.abs(prices[coin.label].changePercent))}%`
+                                                                <span className={`text-sm font-bold transition-all duration-500 ease-in-out ${currentPrices[coin.label]?.changePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                                        {currentPrices[coin.label]?.changePercent
+                                                                                ? `${currentPrices[coin.label].changePercent >= 0 ? '↑' : '↓'} ${formatChange(Math.abs(currentPrices[coin.label].changePercent))}%`
                                                                                 : "..."}
                                                                 </span>
                                                         </div>
@@ -179,7 +154,7 @@ export default function Ticker() {
                                         </div>
                                         <style jsx>{`
             @keyframes marquee-right-to-left {
-              0% { transform: translateX(100%); }
+              0% { transform: translateX(100vw); }
               100% { transform: translateX(-100%); }
             }
             .group {

@@ -1,0 +1,6 @@
+{
+  "/option-pl/page": "app/option-pl/page.js",
+  "/page": "app/page.js",
+  "/black-scholes/page": "app/black-scholes/page.js",
+  "/api/crypto/route": "app/api/crypto/route.js"
+}

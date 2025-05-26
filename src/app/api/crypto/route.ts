@@ -3,18 +3,18 @@ import { NextResponse } from 'next/server';
 export async function GET() {
         try {
                 const symbols = [
-                        "BTCUSDT",
-                        "ETHUSDT",
-                        "BNBUSDT",
-                        "SOLUSDT",
-                        "SUIUSDT",
-                        "LINKUSDT",
-                        "DOTUSDT",
-                        "XRPUSDT",
-                        "DOGEUSDT",
-                        "SUSHIUSDT",
-                        "ADAUSDT",
-                        "ARBUSDT"
+                        "BINANCE:BTCUSDT",
+                        "BINANCE:ETHUSDT",
+                        "BINANCE:BNBUSDT",
+                        "BINANCE:SOLUSDT",
+                        "BINANCE:SUIUSDT",
+                        "BINANCE:LINKUSDT",
+                        "BINANCE:DOTUSDT",
+                        "BINANCE:XRPUSDT",
+                        "BINANCE:DOGEUSDT",
+                        "BINANCE:SUSHIUSDT",
+                        "BINANCE:ADAUSDT",
+                        "BINANCE:ARBUSDT"
                 ];
 
                 // Validate symbols
@@ -26,11 +26,25 @@ export async function GET() {
                 }
 
                 const promises = symbols.map(symbol =>
-                        fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`, {
+                        fetch(`https://scanner.tradingview.com/crypto/scan`, {
+                                method: 'POST',
                                 headers: {
+                                        'Content-Type': 'application/json',
+                                        'User-Agent': 'Mozilla/5.0',
                                         'Accept': 'application/json',
                                         'Cache-Control': 'no-cache'
                                 },
+                                body: JSON.stringify({
+                                        "symbols": {
+                                                "tickers": [symbol]
+                                        },
+                                        "columns": [
+                                                "close",
+                                                "change",
+                                                "change_abs",
+                                                "change_percent"
+                                        ]
+                                }),
                                 cache: 'no-store'
                         })
                                 .then(res => res.json())
@@ -40,13 +54,16 @@ export async function GET() {
 
                 // Validate and format response
                 const formattedData = results
-                        .filter((item: any) => item && item.symbol && item.lastPrice)
-                        .map((item: any) => ({
-                                symbol: `BINANCE:${item.symbol}`,
-                                price: parseFloat(item.lastPrice) || 0,
-                                change: parseFloat(item.priceChange) || 0,
-                                changePercent: parseFloat(item.priceChangePercent) || 0
-                        }));
+                        .filter((item: any) => item && item.data && item.data.length > 0)
+                        .map((item: any) => {
+                                const data = item.data[0];
+                                return {
+                                        symbol: symbols[results.indexOf(item)],
+                                        price: parseFloat(data.d[0]) || 0,
+                                        change: parseFloat(data.d[2]) || 0,
+                                        changePercent: parseFloat(data.d[3]) || 0
+                                };
+                        });
 
                 return NextResponse.json(formattedData, {
                         headers: {

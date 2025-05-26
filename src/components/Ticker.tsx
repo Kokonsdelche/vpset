@@ -23,13 +23,7 @@ interface PriceData {
 }
 
 const formatPrice = (price: number, symbol: string) => {
-        if (symbol === "BTC") {
-                return price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        } else if (symbol === "ETH") {
-                return price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        } else if (["BNB", "SOL"].includes(symbol)) {
-                return price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        } else if (["LINK", "DOT", "ARB"].includes(symbol)) {
+        if (["BTC", "ETH", "BNB", "SOL", "LINK", "DOT", "ARB"].includes(symbol)) {
                 return price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         } else {
                 return price.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
@@ -42,15 +36,14 @@ const formatChange = (change: number) => {
 
 export default function Ticker() {
         const [prices, setPrices] = useState<Record<string, PriceData>>({});
-        const [nextPrices, setNextPrices] = useState<Record<string, PriceData>>({});
         const [error, setError] = useState<string | null>(null);
         const [loading, setLoading] = useState(true);
         const [duration, setDuration] = useState(30);
         const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
         const marqueeRef = useRef<HTMLDivElement>(null);
-        const [isFirstSet, setIsFirstSet] = useState(true);
+        const [isAnimating, setIsAnimating] = useState(true);
 
-        const fetchPrices = async (isFirst: boolean) => {
+        const fetchPrices = async () => {
                 try {
                         setLoading(true);
                         setError(null);
@@ -70,11 +63,7 @@ export default function Ticker() {
                                 }
                         });
 
-                        if (isFirst) {
-                                setPrices(filtered);
-                        } else {
-                                setNextPrices(filtered);
-                        }
+                        setPrices(filtered);
                         setLastUpdate(new Date());
                 } catch (err) {
                         setError("دریافت قیمت آنلاین ممکن نیست. لطفاً بعداً تلاش کنید.");
@@ -84,24 +73,23 @@ export default function Ticker() {
         };
 
         useEffect(() => {
+                fetchPrices();
+        }, []);
+
+        useEffect(() => {
                 if (marqueeRef.current) {
                         const width = marqueeRef.current.scrollWidth;
                         const newDuration = Math.max(6, Math.floor(width / 300) * 3);
                         setDuration(newDuration);
                 }
-        }, [loading, prices, nextPrices]);
-
-        useEffect(() => {
-                const initializePrices = async () => {
-                        await fetchPrices(true);
-                        await fetchPrices(false);
-                };
-                initializePrices();
-        }, []);
+        }, [loading, prices]);
 
         const handleAnimationEnd = () => {
-                setIsFirstSet(!isFirstSet);
-                fetchPrices(!isFirstSet);
+                setIsAnimating(false);
+                setTimeout(async () => {
+                        await fetchPrices();
+                        setIsAnimating(true);
+                }, 2000); // 2 ثانیه مکث بین هر بار نمایش
         };
 
         if (error) {
@@ -111,8 +99,6 @@ export default function Ticker() {
                         </div>
                 );
         }
-
-        const currentPrices = isFirstSet ? prices : nextPrices;
 
         return (
                 <div className="w-full bg-[#181c20] border-b border-gray-800 shadow-lg overflow-hidden select-none">
@@ -127,7 +113,7 @@ export default function Ticker() {
                                                 ref={marqueeRef}
                                                 className="flex whitespace-nowrap group"
                                                 style={{
-                                                        animation: `marquee-right-to-left ${duration}s linear`,
+                                                        animation: isAnimating ? `marquee-right-to-left ${duration}s linear` : 'none',
                                                 }}
                                                 onAnimationEnd={handleAnimationEnd}
                                                 onMouseEnter={e => e.currentTarget.style.animationPlayState = "paused"}
@@ -140,13 +126,13 @@ export default function Ticker() {
                                                         >
                                                                 <span className="font-bold text-white drop-shadow">{coin.label}</span>
                                                                 <span className="text-lime-400 font-mono drop-shadow transition-all duration-500 ease-in-out">
-                                                                        ${currentPrices[coin.label]?.price
-                                                                                ? formatPrice(currentPrices[coin.label].price, coin.label)
+                                                                        ${prices[coin.label]?.price
+                                                                                ? formatPrice(prices[coin.label].price, coin.label)
                                                                                 : "..."}
                                                                 </span>
-                                                                <span className={`text-sm font-bold transition-all duration-500 ease-in-out ${currentPrices[coin.label]?.changePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                                                        {currentPrices[coin.label]?.changePercent
-                                                                                ? `${currentPrices[coin.label].changePercent >= 0 ? '↑' : '↓'} ${formatChange(Math.abs(currentPrices[coin.label].changePercent))}%`
+                                                                <span className={`text-sm font-bold transition-all duration-500 ease-in-out ${prices[coin.label]?.changePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                                        {prices[coin.label]?.changePercent
+                                                                                ? `${prices[coin.label].changePercent >= 0 ? '↑' : '↓'} ${formatChange(Math.abs(prices[coin.label].changePercent))}%`
                                                                                 : "..."}
                                                                 </span>
                                                         </div>
